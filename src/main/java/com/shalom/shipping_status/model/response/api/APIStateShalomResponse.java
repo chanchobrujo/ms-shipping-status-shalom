@@ -19,6 +19,9 @@ public class APIStateShalomResponse {
     private String message;
     private Map<String, APIStateItemShalomResponse> data =  new HashMap<>();
 
+    private static final String TRANSIT_NAME = "transito";
+    private static final String DESTINY_NAME = "destino";
+
     @Data
     public static class APIStateItemShalomResponse {
         private String fecha;
@@ -44,13 +47,19 @@ public class APIStateShalomResponse {
         ofNullable(this.getData())
                 .filter(d -> !d.isEmpty())
                 .ifPresent(data -> {
-                    if (data.containsKey("destino") && nonNull(data.get("destino"))) {
-                        response.setCompleto(data.get("destino").getCompleto());
+                    TrackingDto value = null;
+                    var transitValue = data.get(TRANSIT_NAME);
+                    var destinyValue = data.get(DESTINY_NAME);
+
+                    var transitFlag = data.containsKey(TRANSIT_NAME) && nonNull(transitValue);
+                    var destinyFlag = data.containsKey(DESTINY_NAME) && nonNull(destinyValue);
+
+                    if (transitFlag) value = transitValue.toDto();
+                    if (destinyFlag) {
+                        value = new TrackingDto("FINAL", LocalDateTime.now().toString());
+                        response.setCompleto(destinyValue.getCompleto());
                     }
-                    if (data.containsKey("transito") && nonNull(data.get("transito"))) {
-                        var value = data.get("transito").toDto();
-                        response.getTracking().add(value);
-                    }
+                    ofNullable(value).ifPresent(v -> response.getTracking().add(v));
                 });
     }
 }

@@ -46,7 +46,6 @@ public class ShipStatusService implements IShipStatusService {
         return this.repository
                 .findById(searchShalomResponse.getTrackingNumber())
                 .flatMap(item -> {
-
                     //GUARDAMOS LA LISTA
                     item.setTracking(finalList);
                     return this.repository.save(item);
