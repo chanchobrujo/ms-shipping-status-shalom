@@ -1,0 +1,22 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name:
+      ms-shipping-status
+  data:
+    mongodb:
+      port: <port_mongo>
+      host: <host_mongo>
+      username: <user_mongo>
+      password: <password_mongo>
+      database: shalom-status
+      authentication-database: admin
+
+apis:
+  shalom:
+    value: https://servicesweb.shalomcontrol.com/api/v1/web/rastrea
+    methods:
+      search: /buscar
+      states: /estados
