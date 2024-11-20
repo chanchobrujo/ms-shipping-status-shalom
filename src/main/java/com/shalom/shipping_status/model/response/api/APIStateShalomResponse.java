@@ -56,7 +56,7 @@ public class APIStateShalomResponse {
 
                     if (transitFlag) value = transitValue.toDto();
                     if (destinyFlag) {
-                        value = new TrackingDto("FINAL", LocalDateTime.now().toString());
+                        value = destinyValue.toDto();
                         response.setCompleto(destinyValue.getCompleto());
                     }
                     ofNullable(value).ifPresent(v -> response.getTracking().add(v));
