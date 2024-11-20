@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Comparator.comparing;
@@ -26,25 +25,31 @@ public class ShipStatusService implements IShipStatusService {
     public Mono<ShipStatusDocument> getCurrentTracking(ShipShalomRequest request) {
         return this.repository
                 .findById(request.getNumber())
-                .switchIfEmpty(this.save(request.getNumber(),request.getCode(), new ArrayList<>()));
+                .switchIfEmpty(this.repository.save(new ShipStatusDocument(request)));
     }
 
     @Override
     public Mono<ShipStatusDocument> verifyCurrentTracking(SearchShalomResponse searchShalomResponse, List<TrackingDto> trackingToBd) {
+        //ORDENAMOS LA LISTA
+        var finalList = trackingToBd
+                .stream()
+                .sorted(comparing(TrackingDto::_date))
+                .distinct()
+                .collect(toList());
+
+        //AGREGAMOS NUEVOS ELEMENTOS A LA LISTA
         searchShalomResponse.getTracking()
                 .stream()
-                .filter(item -> !trackingToBd.contains(item))
-                .forEach(trackingToBd::add);
-        return this.save(searchShalomResponse.getTrackingNumber(), searchShalomResponse.getCode(), trackingToBd);
-    }
+                .filter(item -> !finalList.contains(item))
+                .forEach(finalList::add);
 
-    private Mono<ShipStatusDocument> save(String trackingNumber, String code, List<TrackingDto> trackingToBd) {
-        if (!trackingToBd.isEmpty()) {
-            trackingToBd = trackingToBd
-                    .stream()
-                    .sorted(comparing(TrackingDto::_date))
-                    .collect(toList());
-        }
-        return this.repository.save(new ShipStatusDocument(trackingNumber, code, trackingToBd));
+        return this.repository
+                .findById(searchShalomResponse.getTrackingNumber())
+                .flatMap(item -> {
+
+                    //GUARDAMOS LA LISTA
+                    item.setTracking(finalList);
+                    return this.repository.save(item);
+                });
     }
 }
