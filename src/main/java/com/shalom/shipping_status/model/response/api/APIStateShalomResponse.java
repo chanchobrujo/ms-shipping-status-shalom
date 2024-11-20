@@ -47,19 +47,17 @@ public class APIStateShalomResponse {
         ofNullable(this.getData())
                 .filter(d -> !d.isEmpty())
                 .ifPresent(data -> {
-                    TrackingDto value = null;
                     var transitValue = data.get(TRANSIT_NAME);
                     var destinyValue = data.get(DESTINY_NAME);
 
                     var transitFlag = data.containsKey(TRANSIT_NAME) && nonNull(transitValue);
                     var destinyFlag = data.containsKey(DESTINY_NAME) && nonNull(destinyValue);
 
-                    if (transitFlag) value = transitValue.toDto();
+                    if (transitFlag) response.getTracking().add(transitValue.toDto());
                     if (destinyFlag) {
-                        value = destinyValue.toDto();
+                        response.getTracking().add(destinyValue.toDto());
                         response.setCompleto(destinyValue.getCompleto());
                     }
-                    ofNullable(value).ifPresent(v -> response.getTracking().add(v));
                 });
     }
 }
