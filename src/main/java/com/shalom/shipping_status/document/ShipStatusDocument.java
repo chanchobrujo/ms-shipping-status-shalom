@@ -1,6 +1,7 @@
 package com.shalom.shipping_status.document;
 
 import com.shalom.shipping_status.model.dto.TrackingDto;
+import com.shalom.shipping_status.model.request.ShipShalomRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,8 @@ public class ShipStatusDocument {
     private TrackingDto lastDetectedTracking;
     private List<TrackingDto> tracking = new ArrayList<>();
 
-    public ShipStatusDocument(String trackingNumber,  String code, List<TrackingDto> tracking) {
-        this.tracking = tracking;
-        this.code = code;
-        this.trackingNumber = trackingNumber;
+    public ShipStatusDocument(ShipShalomRequest request) {
+        this.code = request.getCode();
+        this.trackingNumber = request.getNumber();
     }
 }
