@@ -17,6 +17,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 public class SearchShalomResponse {
     private Boolean completo = false;
 
+    private String email;
     private String _origen;
     private String _destino;
     private String trackingNumber;

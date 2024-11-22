@@ -16,6 +16,7 @@ import java.util.List;
 public class ShipStatusDocument {
     @Id
     private String trackingNumber;
+    private String email;
     private String code;
     private boolean complete = false;
     private TrackingDto lastDetectedTracking;

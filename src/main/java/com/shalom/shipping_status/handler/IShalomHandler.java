@@ -6,4 +6,5 @@ import reactor.core.publisher.Mono;
 
 public interface IShalomHandler {
     Mono<ServerResponse> getPackage(ServerRequest request);
+    Mono<ServerResponse> setEmail(ServerRequest request);
 }
