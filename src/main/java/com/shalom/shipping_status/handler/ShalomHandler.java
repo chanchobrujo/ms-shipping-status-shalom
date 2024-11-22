@@ -1,5 +1,6 @@
 package com.shalom.shipping_status.handler;
 
+import com.shalom.shipping_status.model.request.SetEmailShipShalomRequest;
 import com.shalom.shipping_status.model.request.ShipShalomRequest;
 import com.shalom.shipping_status.service.shalom.IShalomService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,13 @@ public class ShalomHandler implements IShalomHandler {
     public Mono<ServerResponse> getPackage(ServerRequest request) {
         return request.bodyToMono(ShipShalomRequest.class)
                 .flatMap(this.service::getPackage)
+                .flatMap(response -> ok().contentType(APPLICATION_JSON).bodyValue(response));
+    }
+
+    @Override
+    public Mono<ServerResponse> setEmail(ServerRequest request) {
+        return request.bodyToMono(SetEmailShipShalomRequest.class)
+                .flatMap(this.service::setEmail)
                 .flatMap(response -> ok().contentType(APPLICATION_JSON).bodyValue(response));
     }
 }
