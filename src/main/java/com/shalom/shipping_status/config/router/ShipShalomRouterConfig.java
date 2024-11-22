@@ -17,10 +17,9 @@ public class ShipShalomRouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routes(IShalomHandler handler) {
         return route()
-                .path("/api/ship-shalom", (Builder builder) -> {
-                    builder.POST("/states", accept(APPLICATION_JSON), handler::getPackage);
-                    builder.PUT("/set-email", accept(APPLICATION_JSON), handler::setEmail);
-                })
+                .path("/api/ship-shalom", (Builder builder) -> builder
+                        .POST("/states", accept(APPLICATION_JSON), handler::getPackage)
+                        .PUT("/set-email", accept(APPLICATION_JSON), handler::setEmail))
                 .build();
     }
 }
