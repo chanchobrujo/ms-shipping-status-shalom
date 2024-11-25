@@ -28,7 +28,7 @@ public class ShipStatusService implements IShipStatusService {
     @Override
     public Mono<ShipStatusDocument> setEmailByTrackingNumber(SetEmailShipShalomRequest request) {
         return this.repository.findById(request.getNumber())
-                .filter(itemSaved -> isNull(itemSaved.getEmail()))
+                .filter(itemSaved -> isNull(itemSaved.getEmail()) || itemSaved.getEmail().isEmpty())
                 .switchIfEmpty(error(new BusinessException("Elemento no encontrado.")))
                 .doOnNext(itemSaved -> itemSaved.setEmail(request.getEmail()))
                 .flatMap(this.repository::save);
