@@ -4,7 +4,6 @@ import com.shalom.shipping_status.document.ShipStatusDocument;
 import com.shalom.shipping_status.model.dto.TrackingDto;
 import com.shalom.shipping_status.model.exception.BusinessException;
 import com.shalom.shipping_status.model.request.SetEmailShipShalomRequest;
-import com.shalom.shipping_status.model.request.ShipShalomRequest;
 import com.shalom.shipping_status.model.response.SearchShalomResponse;
 import com.shalom.shipping_status.repository.IShipStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,38 +28,30 @@ public class ShipStatusService implements IShipStatusService {
     public Mono<ShipStatusDocument> setEmailByTrackingNumber(SetEmailShipShalomRequest request) {
         return this.repository.findById(request.getNumber())
                 .filter(itemSaved -> isNull(itemSaved.getEmail()) || itemSaved.getEmail().isEmpty())
-                .switchIfEmpty(error(new BusinessException("Elemento no encontrado.")))
+                .switchIfEmpty(error(new BusinessException("Correo ya registrado.")))
                 .doOnNext(itemSaved -> itemSaved.setEmail(request.getEmail()))
                 .flatMap(this.repository::save);
     }
 
     @Override
-    public Mono<ShipStatusDocument> getCurrentTracking(ShipShalomRequest request) {
-        return this.repository
-                .findById(request.getNumber())
-                .switchIfEmpty(this.repository.save(new ShipStatusDocument(request)));
-    }
-
-    @Override
-    public Mono<ShipStatusDocument> verifyCurrentTracking(SearchShalomResponse searchShalomResponse, List<TrackingDto> trackingToBd) {
-        //ORDENAMOS LA LISTA
-        var finalList = trackingToBd
-                .stream()
-                .sorted(comparing(TrackingDto::_date))
-                .distinct()
-                .collect(toList());
-
-        //AGREGAMOS NUEVOS ELEMENTOS A LA LISTA
-        searchShalomResponse.getTracking()
-                .stream()
-                .filter(item -> !finalList.contains(item))
-                .forEach(finalList::add);
-
+    public Mono<ShipStatusDocument> verifyCurrentTracking(SearchShalomResponse searchShalomResponse) {
         return this.repository
                 .findById(searchShalomResponse.getTrackingNumber())
                 .flatMap(item -> {
+                    //ORDENAMOS LA LISTA
+                    List<TrackingDto> currentTrackingSaved = item.getTracking()
+                            .stream()
+                            .sorted(comparing(TrackingDto::_date))
+                            .distinct()
+                            .collect(toList());
+
+                    //AGREGAMOS NUEVOS ELEMENTOS A LA LISTA
+                    searchShalomResponse.getTracking()
+                            .stream()
+                            .filter(t -> !currentTrackingSaved.contains(t))
+                            .forEach(currentTrackingSaved::add);
                     //GUARDAMOS LA LISTA
-                    item.setTracking(finalList);
+                    item.setTracking(currentTrackingSaved);
                     return this.repository.save(item);
                 });
     }

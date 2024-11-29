@@ -16,35 +16,22 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 import static reactor.core.publisher.Mono.error;
-import static reactor.core.publisher.Mono.zip;
 
 @Service
 @RequiredArgsConstructor
-public class ShalomService implements IShalomService{
+public class ShalomService implements IShalomService {
     private final IApiShalomRest apiShalomRest;
     private final IShipStatusService shipStatusService;
 
     @Override
     public Mono<SearchShalomResponse> getPackage(ShipShalomRequest request) {
-        Mono<SearchShalomResponse> searchShalomMonoResponse = this.apiShalomRest
+        return this.apiShalomRest
                 .search(request)
                 .filter(APISearchShalomResponse::getSuccess)
                 .switchIfEmpty(error(new BusinessException("Elemento no encontrado.")))
                 .map(APISearchShalomResponse::toResponse)
-                .flatMap(this::states);
-        Mono<ShipStatusDocument> currentTrackingMonoResponse = this.shipStatusService
-                .getCurrentTracking(request);
-        return zip(searchShalomMonoResponse, currentTrackingMonoResponse)
-                .flatMap(tupla -> {
-                    SearchShalomResponse searchShalomResponse = tupla.getT1();
-                    ShipStatusDocument itemSearchShalomResponse = tupla.getT2();
-                    searchShalomResponse.setEmail(itemSearchShalomResponse.getEmail());
-                    return this.shipStatusService
-                            .verifyCurrentTracking(searchShalomResponse, itemSearchShalomResponse.getTracking())
-                            .map(ShipStatusDocument::getTracking)
-                            .doOnNext(searchShalomResponse::setTracking)
-                            .thenReturn(searchShalomResponse);
-                });
+                .flatMap(this::setTrackingStates)
+                .flatMap(this::verifyCurrentTracking);
     }
 
     @Override
@@ -54,11 +41,19 @@ public class ShalomService implements IShalomService{
                 .map(response -> Map.of("message", "ok"));
     }
 
-    private Mono<SearchShalomResponse> states(SearchShalomResponse response) {
+    private Mono<SearchShalomResponse> setTrackingStates(SearchShalomResponse response) {
         return this.apiShalomRest
                 .states(response.getOse_id().toString())
                 .filter(APIStateShalomResponse::getSuccess)
                 .doOnNext(c -> c.setDataOfStates(response))
+                .thenReturn(response);
+    }
+
+    private Mono<SearchShalomResponse> verifyCurrentTracking(SearchShalomResponse response) {
+        return this.shipStatusService
+                .verifyCurrentTracking(response)
+                .map(ShipStatusDocument::getTracking)
+                .doOnNext(response::setTracking)
                 .thenReturn(response);
     }
 }
