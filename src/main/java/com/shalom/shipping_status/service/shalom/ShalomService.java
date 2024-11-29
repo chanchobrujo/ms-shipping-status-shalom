@@ -31,7 +31,7 @@ public class ShalomService implements IShalomService {
                 .switchIfEmpty(error(new BusinessException("Elemento no encontrado.")))
                 .map(APISearchShalomResponse::toResponse)
                 .flatMap(this::setTrackingStates)
-                .flatMap(this::verifyCurrentTracking);
+                .flatMap(response -> this.verifyCurrentTracking(request, response));
     }
 
     @Override
@@ -49,9 +49,9 @@ public class ShalomService implements IShalomService {
                 .thenReturn(response);
     }
 
-    private Mono<SearchShalomResponse> verifyCurrentTracking(SearchShalomResponse response) {
+    private Mono<SearchShalomResponse> verifyCurrentTracking(ShipShalomRequest request, SearchShalomResponse response) {
         return this.shipStatusService
-                .verifyCurrentTracking(response)
+                .verifyCurrentTracking(request, response)
                 .map(ShipStatusDocument::getTracking)
                 .doOnNext(response::setTracking)
                 .thenReturn(response);
