@@ -4,6 +4,7 @@ import com.shalom.shipping_status.document.ShipStatusDocument;
 import com.shalom.shipping_status.model.dto.TrackingDto;
 import com.shalom.shipping_status.model.exception.BusinessException;
 import com.shalom.shipping_status.model.request.SetEmailShipShalomRequest;
+import com.shalom.shipping_status.model.request.ShipShalomRequest;
 import com.shalom.shipping_status.model.response.SearchShalomResponse;
 import com.shalom.shipping_status.repository.IShipStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,10 @@ public class ShipStatusService implements IShipStatusService {
     }
 
     @Override
-    public Mono<ShipStatusDocument> verifyCurrentTracking(SearchShalomResponse searchShalomResponse) {
+    public Mono<ShipStatusDocument> verifyCurrentTracking(ShipShalomRequest request, SearchShalomResponse searchShalomResponse) {
         return this.repository
                 .findById(searchShalomResponse.getTrackingNumber())
+                .switchIfEmpty(this.repository.save(new ShipStatusDocument(request)))
                 .flatMap(item -> {
                     searchShalomResponse.setEmail(item.getEmail());
                     //ORDENAMOS LA LISTA
