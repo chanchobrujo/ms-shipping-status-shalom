@@ -60,4 +60,4 @@ jobs:
             echo ${{ secrets.VPS_PASSWORD }} | sudo docker rm ${{ env.image_name }}
             echo ${{ secrets.VPS_PASSWORD }} | sudo -S docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.image_name }}:${{ env.image_version }}
             echo ${{ secrets.VPS_PASSWORD }} | sudo -S docker compose up -d --build
-            echo ${{ secrets.VPS_PASSWORD }} | sudo -S docker system prune -a
+            echo y | echo ${{ secrets.VPS_PASSWORD }} | sudo -S docker system prune -a
