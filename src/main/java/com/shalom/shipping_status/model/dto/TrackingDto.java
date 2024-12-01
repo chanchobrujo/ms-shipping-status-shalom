@@ -10,8 +10,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrackingDto {
-    private String truck;
     private String date;
+    private String truck;
+    private String message;
 
     public LocalDateTime _date() {
         return LocalDateTime.parse(this.date);
