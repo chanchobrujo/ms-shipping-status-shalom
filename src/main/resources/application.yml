@@ -7,16 +7,13 @@ spring:
       ms-shipping-status
   data:
     mongodb:
-      port: <port_mongo>
-      host: <host_mongo>
-      username: <user_mongo>
-      password: <password_mongo>
+      port: ${MONGO_PORT}
+      host: ${MONGO_HOST}
+      username: ${MONGO_USER}
+      password: ${MONGO_PASSWORD}
       database: shalom-status
       authentication-database: admin
 
-apis:
-  shalom:
-    value: https://servicesweb.shalomcontrol.com/api/v1/web/rastrea
-    methods:
-      search: /buscar
-      states: /estados
+configuration:
+  apis:
+    shalom: ${REST_CLIENT_SHALOM}
