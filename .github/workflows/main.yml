@@ -1,9 +1,11 @@
 name: Deploy to VPS
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+  release:
+    types: [ created ]
 
 jobs:
   build_and_push:
