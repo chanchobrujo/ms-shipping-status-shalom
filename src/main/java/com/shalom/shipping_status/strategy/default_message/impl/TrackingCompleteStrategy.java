@@ -1,12 +1,11 @@
-package com.shalom.shipping_status.message.impl;
+package com.shalom.shipping_status.strategy.default_message.impl;
 
-import com.shalom.shipping_status.message.MessageDefaultStrategy;
 import com.shalom.shipping_status.model.dto.TrackingDto;
 import com.shalom.shipping_status.model.response.SearchShalomResponse;
 import com.shalom.shipping_status.properties.DefaultMessageProperties;
+import com.shalom.shipping_status.strategy.default_message.MessageDefaultStrategy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import static com.shalom.shipping_status.common.enums.DefaultMessageFlowEnum.TRACKING_COMPLETE;
 import static io.micrometer.common.util.StringUtils.isEmpty;
@@ -22,7 +21,7 @@ public class TrackingCompleteStrategy implements MessageDefaultStrategy {
     }
 
     @Override
-    public Mono<String> buildMessage(TrackingDto lastTracking, SearchShalomResponse shipStatusResponse) {
+    public String buildMessage(TrackingDto lastTracking, SearchShalomResponse shipStatusResponse) {
         var defaultMessagesMail = this.properties.getDefaultMessagesMail();
         var messageFirstPart = defaultMessagesMail.getFirstPart()
                 .replace("[DESTINATARIO]", shipStatusResponse.getDestinatarioName())
@@ -30,6 +29,6 @@ public class TrackingCompleteStrategy implements MessageDefaultStrategy {
         var flowMessage = defaultMessagesMail.getFlows()
                 .get(TRACKING_COMPLETE)
                 .replace("[LAST_TRACKING_DATE]", lastTracking.formatedDate());
-        return Mono.just(messageFirstPart.concat(flowMessage));
+        return (messageFirstPart.concat(flowMessage));
     }
 }

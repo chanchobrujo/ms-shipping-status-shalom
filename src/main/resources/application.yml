@@ -13,6 +13,21 @@ spring:
       password: ${MONGO_PASSWORD}
       database: shalom-status
       authentication-database: admin
+  mail:
+    port: 587
+    host: smtp.gmail.com
+    username: ${GMAIL_USER}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          writetimeout: 5000
+          connectiontimeout: 5000
+          starttls:
+            enable: true
+            required: true
 
 configuration:
   verifyStatusTask: "0 0/25 8-20 * * *"

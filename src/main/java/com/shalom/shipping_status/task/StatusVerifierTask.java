@@ -2,17 +2,15 @@ package com.shalom.shipping_status.task;
 
 import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
-import com.shalom.shipping_status.document.ShipStatusDocument;
-import com.shalom.shipping_status.mapper.NotificationMapper;
-import com.shalom.shipping_status.message.MessageDefaultStrategy;
-import com.shalom.shipping_status.model.request.ShipShalomRequest;
 import com.shalom.shipping_status.repository.ShipStatusRepository;
-import com.shalom.shipping_status.service.RetrieveStatusService;
+import com.shalom.shipping_status.strategy.default_message.MessageDefaultComposite;
+import com.shalom.shipping_status.strategy.send_message.SendMessageStrategy;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -29,12 +27,9 @@ import static com.shalom.shipping_status.common.constants.DateConstants.ZONE_ID;
 @Component
 @RequiredArgsConstructor
 public class StatusVerifierTask {
-
-    private final NotificationMapper notificationMapper;
+    private final MessageDefaultComposite composite;
     private final ShipStatusRepository shipStatusRepository;
-    private final RetrieveStatusService retrieveStatusService;
-
-    private final List<MessageDefaultStrategy> messageDefaultStrategies;
+    private final List<SendMessageStrategy> sendMessageStrategies;
 
     @Value("${configuration.verifyStatusTask}")
     private String cronExpression;
@@ -55,39 +50,16 @@ public class StatusVerifierTask {
                     return this.shipStatusRepository.findIncompleteWithEmail()
                             .flatMap(shipStatus -> {
                                 return Mono.just(shipStatus)
-                                        .zipWith(this.builderMessage(shipStatus));
+                                        .zipWith(this.composite.retrieve(shipStatus))
+                                        .flatMap(tuple -> {
+                                            return Flux.fromIterable(this.sendMessageStrategies)
+                                                    .flatMap(strategy -> strategy.send(tuple))
+                                                    .then();
+                                        });
                             })
-                            .map(this.notificationMapper::mapper)
                             .collectList();
                 })
                 .doFinally(signal -> this.scheduleNextExecution(executionTime))
                 .subscribe();
-    }
-
-    private Mono<String> builderMessage(ShipStatusDocument document) {
-        var request = new ShipShalomRequest(document.getCode(), document.getTrackingNumber());
-        return this.retrieveStatusService
-                .retrieve(request)
-                .flatMap(shipStatusResponse -> {
-                    var trackings = shipStatusResponse.getTracking();
-                    if (!trackings.isEmpty()) {
-                        var currentTracking = document.getLastDetectedTracking();
-                        var tracking = trackings.get(trackings.size() - 1);
-
-                        if (!tracking.equals(currentTracking)) {
-                            var msgStrategy = this.messageDefaultStrategies.stream()
-                                    .filter(strategy -> strategy.support(tracking, shipStatusResponse))
-                                    .map(strategy -> strategy.buildMessage(tracking, shipStatusResponse))
-                                    .findFirst()
-                                    .orElseGet(Mono::empty);
-                            return msgStrategy.flatMap(message -> {
-                                document.setLastDetectedTracking(tracking);
-                                return this.shipStatusRepository.save(document)
-                                        .thenReturn(message);
-                            });
-                        }
-                    }
-                    return Mono.empty();
-                });
     }
 }
