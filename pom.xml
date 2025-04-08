@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.yape</groupId>
     <artifactId>ms-shipping-status</artifactId>
-    <version>0.7</version>
+    <version>0.8</version>
     <name>ms-shipping-status</name>
     <description>Demo project for Spring Boot</description>
     <url/>
@@ -48,6 +48,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>9.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

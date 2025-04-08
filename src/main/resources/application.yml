@@ -15,5 +15,7 @@ spring:
       authentication-database: admin
 
 configuration:
+  verifyStatusTask: "0 0/25 8-20 * * *"
+  defaultMessagesMailConfig: ${DEFAULT_MSG_MAIL}
   apis:
     shalom: ${REST_CLIENT_SHALOM}
