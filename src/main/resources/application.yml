@@ -31,6 +31,7 @@ spring:
 
 configuration:
   verifyStatusTask: "0 0/25 8-20 * * *"
-  defaultMessagesMailConfig: ${DEFAULT_MSG_MAIL}
+  defaultMessagesConfig: ${DEFAULT_MSG}
+  defaultStepMessagesConfig: ${DEFAULT_STEP_MSG}
   apis:
     shalom: ${REST_CLIENT_SHALOM}

@@ -3,7 +3,6 @@ package com.shalom.shipping_status.properties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shalom.shipping_status.common.enums.DefaultMessageFlowEnum;
 import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -15,20 +14,20 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 @ConfigurationProperties(prefix = "configuration")
-public class DefaultMessageProperties {
+public class DefaultStepMessageProperties {
     private final ObjectMapper objectMapper;
-    private DefaultMessageDto defaultMessages;
+    private DefaultStepMessageDto defaultStepMessages;
 
-    public void setDefaultMessagesConfig(String defaultMessagesConfig) throws JsonProcessingException {
-        this.defaultMessages = this.objectMapper.readValue(defaultMessagesConfig, new TypeReference<>() {
+    public void setDefaultStepMessagesConfig(String defaultStepMessagesConfig) throws JsonProcessingException {
+        this.defaultStepMessages = this.objectMapper.readValue(defaultStepMessagesConfig, new TypeReference<>() {
         });
     }
 
     @Getter
     @Setter
     @Builder
-    public static class DefaultMessageDto {
-        private String firstPart;
-        private Map<DefaultMessageFlowEnum, String> flows;
+    public static class DefaultStepMessageDto {
+        private String start;
+        private Map<String, String> end;
     }
 }

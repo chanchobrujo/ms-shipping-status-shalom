@@ -4,18 +4,16 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import com.shalom.shipping_status.repository.ShipStatusRepository;
 import com.shalom.shipping_status.strategy.default_message.MessageDefaultComposite;
-import com.shalom.shipping_status.strategy.send_message.SendMessageStrategy;
+import com.shalom.shipping_status.strategy.send_message.SendMessageComposite;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static com.cronutils.model.CronType.SPRING;
@@ -29,7 +27,7 @@ import static com.shalom.shipping_status.common.constants.DateConstants.ZONE_ID;
 public class StatusVerifierTask {
     private final MessageDefaultComposite composite;
     private final ShipStatusRepository shipStatusRepository;
-    private final List<SendMessageStrategy> sendMessageStrategies;
+    private final SendMessageComposite sendMessageComposite;
 
     @Value("${configuration.verifyStatusTask}")
     private String cronExpression;
@@ -47,15 +45,13 @@ public class StatusVerifierTask {
 
         Mono.delay(delayOpt.get())
                 .flatMap(tick -> {
+                    log.info("Inicio de verificacion de pedidos.");
                     return this.shipStatusRepository.findIncompleteWithEmail()
                             .flatMap(shipStatus -> {
+                                log.info("-Procesando pedido: ".concat(shipStatus.getCode()));
                                 return Mono.just(shipStatus)
                                         .zipWith(this.composite.retrieve(shipStatus))
-                                        .flatMap(tuple -> {
-                                            return Flux.fromIterable(this.sendMessageStrategies)
-                                                    .flatMap(strategy -> strategy.send(tuple))
-                                                    .then();
-                                        });
+                                        .flatMap(this.sendMessageComposite::retrieve);
                             })
                             .collectList();
                 })
