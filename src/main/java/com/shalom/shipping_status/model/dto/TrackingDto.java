@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static io.micrometer.common.util.StringUtils.isNotEmpty;
 import static java.time.LocalDateTime.parse;
 
 @Data
@@ -25,5 +26,9 @@ public class TrackingDto {
         return parse(this.getDate())
                 .atZone(DateConstants.ZONE_ID)
                 .format(DateConstants.FORMATTER);
+    }
+
+    public String keyTuck() {
+        return isNotEmpty(this.getTruck()) ? "withTruck" : "withoutTruck";
     }
 }

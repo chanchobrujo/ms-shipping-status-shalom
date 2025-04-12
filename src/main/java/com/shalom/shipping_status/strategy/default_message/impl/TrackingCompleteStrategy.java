@@ -22,7 +22,7 @@ public class TrackingCompleteStrategy implements MessageDefaultStrategy {
 
     @Override
     public String buildMessage(TrackingDto lastTracking, SearchShalomResponse shipStatusResponse) {
-        var defaultMessagesMail = this.properties.getDefaultMessagesMail();
+        var defaultMessagesMail = this.properties.getDefaultMessages();
         var messageFirstPart = defaultMessagesMail.getFirstPart()
                 .replace("[DESTINATARIO]", shipStatusResponse.getDestinatarioName())
                 .replace("[REMITENTE]", shipStatusResponse.getRemitenteName());
